@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="js/jquery-1.5.1.js"></script>
+    <script src="js/jquery.address-1.4.min.js"></script>
+    <link href="https://gs1.wac.edgecastcdn.net/80460E/assets/1e10b85bb90bf0af2b3f81859787d32518e39f44/stylesheets/bundle_github.css" media="screen" rel="stylesheet" type="text/css">
+</head>
+<body>
+<script>
+    (function () {
+        defaultPath = '/rsdn/nemerle/wiki';
+
+        YQL = 'http' + (/^https/.test(location.protocol) ? 's' : '') + '://query.yahooapis.com/v1/public/yql?callback=?';
+
+        query = function (page) {
+            return 'select * from html where url="https://github.com' + page + '" and xpath="//div[@id=\'wiki-content\']"';
+        }
+
+        $.address.crawlable(true).init(function (event) {
+            // Initializes plugin support for links
+            $('a:not([href^=http])').address();
+        }).change(function (event) {
+
+            // Identifies the page selection 
+            var page = event.path == '/' ? defaultPath : event.path;
+
+            console.log(page);
+
+            $.ajax({
+                url: YQL,
+                data: {
+                    q: query(page),
+                    format: 'xml'
+                },
+                dataType: 'json',
+                success: function (data) {
+                    var content = $(data.results[0]);
+                    $('#wiki-wrapper').html(content.html());
+                }
+            });
+        });
+    })();
+</script>
+    <div id="wiki-wrapper"></div>
+</body>
+</html>
+          
